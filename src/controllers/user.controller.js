@@ -5,6 +5,20 @@ import { uploadOnCloudinary } from "../utils/cloudnary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 
+generateAccessandRefreshToken = async (userId)=>{
+    try {
+        const user = await User.findById(userId);
+        const accessToken = user.gnerateRefreshToken();
+        const refreshToken = user.gnerateAccessToken();
+        user.refreshToken = refreshToken;
+        await user.save({validateBeforeSave: false});
+        return {accessToken,refreshToken};
+    } catch (error) {
+        throw new ApiError(500,"Cannot generate token")
+    }
+}
+
+
 const registerUser = asyncHandler(async (req, res) => {
     //1) user ko data line
     //2) validation line: empty xa ki xaina
@@ -96,6 +110,7 @@ const loginUser = asyncHandler(async (req,res)=>{
         throw new ApiError(401,"Invalid Password");
     }
 
+    const {accessToken,refreshToken} = await generateAccessandRefreshToken(user._id);
     
 
 })
